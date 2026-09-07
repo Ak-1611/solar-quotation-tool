@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BPPL Solar Quotation Generator</title>
+  <title>BPPL Solar Quotation Engine</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -12,6 +12,7 @@
       margin: 0;
     }
     @media print {
+      body { background: #ffffff !important; padding: 0 !important; }
       body * { visibility: hidden; }
       #quotation-preview, #quotation-preview * { visibility: visible; }
       #quotation-preview {
@@ -19,42 +20,42 @@
         left: 0;
         top: 0;
         width: 210mm !important;
-        height: 297mm !important;
+        height: 296mm !important;
         box-shadow: none !important;
         border: none !important;
+        margin: 0 !important;
       }
     }
-    .a4-sheet {
+    .a4-container {
       width: 210mm;
-      height: 296mm; /* Strictly bounded to prevent page overflow */
-      padding: 10mm 12mm;
+      height: 296mm;
+      max-height: 296mm;
+      padding: 9mm 12mm;
       box-sizing: border-box;
       background: #ffffff;
-      color: #1a1a1a;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #0f172a;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-  <!-- Action Header -->
+  <!-- Control App Header -->
   <header class="bg-slate-900 text-white py-2.5 px-6 shadow flex justify-between items-center sticky top-0 z-50">
     <div class="flex items-center space-x-3">
       <span class="bg-amber-500 text-slate-950 font-black rounded px-2 py-0.5 text-xs">BPPL</span>
-      <h1 class="text-sm font-bold tracking-wide">Bhagavat Powertech Official Quotation Engine</h1>
+      <h1 class="text-sm font-bold tracking-wide">Bhagavat Powertech Quotation Engine</h1>
     </div>
     <div class="flex gap-2">
-      <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded font-medium transition text-slate-200">Print</button>
+      <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded font-medium text-slate-200">Print</button>
       <button onclick="exportToPDF()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs px-4 py-1.5 rounded font-bold transition shadow">Download PDF</button>
     </div>
   </header>
 
-  <div class="max-w-[1700px] mx-auto p-4 grid grid-cols-1 xl:grid-cols-12 gap-5">
+  <main class="max-w-[1700px] mx-auto p-4 grid grid-cols-1 xl:grid-cols-12 gap-5">
 
-    <!-- Configurator Form (Left) -->
+    <!-- Configurator Panel (Left) -->
     <section class="xl:col-span-5 bg-white p-4 rounded-lg shadow-sm border border-slate-200 space-y-3 text-xs">
-      
-      <!-- 1. Metadata -->
       <div class="border-b pb-3">
         <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">1. Quotation & Client Details</h2>
         <div class="grid grid-cols-2 gap-2">
@@ -75,12 +76,9 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
         </div>
       </div>
 
-      <!-- 2. Equipment Selection -->
       <div class="border-b pb-3">
         <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">2. Brand & Technical Equipment</h2>
         <div class="grid grid-cols-2 gap-2">
-          
-          <!-- Panel Brand -->
           <div>
             <label class="font-semibold text-slate-600">Panel Brand</label>
             <select id="in-panel-brand" class="w-full border rounded p-1.5 bg-white" onchange="syncPreview()">
@@ -96,8 +94,6 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
               <option value="POWER ONE">Power One</option>
             </select>
           </div>
-
-          <!-- Panel Wattage Series -->
           <div>
             <label class="font-semibold text-slate-600">Panel Wattage Series</label>
             <select id="in-panel-wattage" class="w-full border rounded p-1.5 bg-white" onchange="syncPreview()">
@@ -112,14 +108,10 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
               <option value="545 WP Mono PERC">545 WP (Mono PERC)</option>
             </select>
           </div>
-
-          <!-- Quantity -->
           <div>
             <label class="font-semibold text-slate-600">Panel Quantity (Nos)</label>
             <input id="in-panel-qty" type="number" value="21" class="w-full border rounded p-1.5" oninput="syncPreview()">
           </div>
-
-          <!-- Inverter Brand -->
           <div>
             <label class="font-semibold text-slate-600">Inverter Brand & Spec</label>
             <select id="in-inverter-brand" class="w-full border rounded p-1.5 bg-white" onchange="syncPreview()">
@@ -138,7 +130,6 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
         </div>
       </div>
 
-      <!-- 3. Financial Itemization -->
       <div>
         <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">3. Cost Itemization</h2>
         <div class="grid grid-cols-2 gap-2">
@@ -168,12 +159,11 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
           </div>
         </div>
       </div>
-
     </section>
 
     <!-- Document Live Preview (Right) -->
     <section class="xl:col-span-7 flex justify-center">
-      <div id="quotation-preview" class="a4-sheet border border-slate-300 shadow-xl flex flex-col justify-between text-[9px] leading-tight">
+      <div id="quotation-preview" class="a4-container border border-slate-300 shadow-xl flex flex-col justify-between text-[8.5px] leading-tight">
 
         <div>
           <!-- Header Bar -->
@@ -185,39 +175,39 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
             <div class="text-right text-[8px] space-y-0.5">
               <p><span class="font-bold">Quotation No:</span> <span id="out-quotation-no">BPPL/2026/QT-1049</span></p>
               <p><span class="font-bold">Date:</span> <span id="out-date"></span></p>
-              <p><span class="font-bold">Valid Until:</span> <span class="font-medium text-red-700">15 Days (Valid to confirm/reply back)</span></p>
+              <p><span class="font-bold">Valid Until:</span> <span class="font-semibold text-slate-800">15 Days (Valid to confirm/reply back)</span></p>
             </div>
           </div>
 
           <!-- Subject Banner -->
           <div class="bg-slate-100 px-2 py-1 rounded border border-slate-300 mb-1.5 flex justify-between items-center text-[8.5px]">
-            <div><span class="font-bold text-slate-900">Subject:</span> Quotation for Rooftop Solar PV System Installation[cite: 1]</div>
+            <div><span class="font-bold text-slate-900">Subject:</span> Quotation for Rooftop Solar PV System Installation</div>
             <span class="font-bold text-slate-700">PM Surya Ghar: Muft Bijli Yojana Workflow</span>
           </div>
 
           <!-- From & To Addresses -->
           <div class="grid grid-cols-2 gap-2 border border-slate-200 rounded p-1.5 mb-1.5 bg-slate-50/50">
             <div>
-              <p class="font-bold text-slate-900 border-b border-slate-200 pb-0.5 mb-0.5 text-[8.5px]">From:[cite: 1]</p>
-              <p class="font-bold text-slate-800">Jatin Dash[cite: 1]</p>
-              <p class="text-slate-600">Bhagavat Powertech (P) Ltd[cite: 1]</p>
-              <p class="text-slate-600">Bhubaneswar, Odisha[cite: 1]</p>
+              <p class="font-bold text-slate-900 border-b border-slate-200 pb-0.5 mb-0.5 text-[8px]">From:</p>
+              <p class="font-bold text-slate-800">Jatin Dash</p>
+              <p class="text-slate-600">Bhagavat Powertech (P) Ltd</p>
+              <p class="text-slate-600">Bhubaneswar, Odisha</p>
             </div>
             <div>
-              <p class="font-bold text-slate-900 border-b border-slate-200 pb-0.5 mb-0.5 text-[8.5px]">To (Client):[cite: 1]</p>
+              <p class="font-bold text-slate-900 border-b border-slate-200 pb-0.5 mb-0.5 text-[8px]">To (Client):</p>
               <div id="out-client" class="text-slate-700 whitespace-pre-line leading-tight"></div>
             </div>
           </div>
 
-          <!-- Proposed Equipment Bar -->
+          <!-- Equipment Banner -->
           <div class="mb-1.5 px-2 py-1 bg-amber-50/70 border border-amber-200 rounded flex justify-between items-center text-[8px]">
             <div><span class="font-bold text-amber-950">Module Make:</span> <span id="out-banner-module" class="font-semibold text-slate-800">ADANI 610 WP TOPCon (21 nos)</span></div>
             <div><span class="font-bold text-amber-950">Inverter Make:</span> <span id="out-banner-inverter" class="font-semibold text-slate-800">POWER ONE</span></div>
           </div>
 
-          <!-- Requested Financial Matrix Table -->
+          <!-- Financial Matrix Table -->
           <div class="mb-1.5">
-            <table class="w-full border-collapse border border-slate-400 text-[8.5px]">
+            <table class="w-full border-collapse border border-slate-400 text-[8px]">
               <thead>
                 <tr class="bg-slate-800 text-white font-semibold">
                   <th class="border border-slate-400 p-1 text-center w-8">Serial No</th>
@@ -271,69 +261,82 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
                   <td id="out-row6-tot" class="border border-slate-400 p-1 text-right font-mono font-medium">₹ 8,200.00</td>
                 </tr>
                 <tr class="bg-slate-100 font-black text-slate-950">
-                  <td colspan="4" class="border border-slate-400 p-1.5 text-right uppercase tracking-wider text-[9px]">Final Amount</td>
-                  <td id="out-final-amt" class="border border-slate-400 p-1.5 text-right font-mono text-[9.5px]">₹ 5,24,903.00</td>
+                  <td colspan="4" class="border border-slate-400 p-1.5 text-right uppercase tracking-wider text-[8.5px]">Final Amount</td>
+                  <td id="out-final-amt" class="border border-slate-400 p-1.5 text-right font-mono text-[9px]">₹ 5,24,903.00</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Professional Terms, Generation Meter & Structure Elevation Clauses -->
-          <div class="border border-slate-200 rounded p-1.5 bg-slate-50 space-y-1 text-[7.5px] leading-relaxed">
-            <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[8px]">Terms & Conditions, Payment Milestones & Disclaimers</h4>
-            
+          <!-- Professional Terms, Generation Meter & Structure Clauses -->
+          <div class="border border-slate-200 rounded p-1.5 bg-slate-50 space-y-0.5 text-[7px] leading-relaxed">
+            <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[7.5px]">Terms & Conditions, Payment Milestones & Disclaimers</h4>
             <p>• <span class="font-bold text-slate-900">Generation Meter Statutory Payment:</span> All generation meter and bi-directional net-meter charges listed above are statutory utility tariffs to be directly deposited/paid by the consumer to the DISCOM (TPCODL).</p>
-            
             <p>• <span class="font-bold text-amber-950">Elevated Structure Customization Notice:</span> The quoted structure cost covers standard GI mounting frames. Any custom elevated structure requires additional costing based on fabrication weight, frame gauge, and rooftop height, typically averaging around <span class="font-bold">₹10,000/-</span> addon. The exact differential quote will be finalized based on site conditions and communicated at the time of material dispatch.</p>
-
             <p>• <span class="font-bold text-slate-900">Stage Payment Milestones:</span> 
               <span class="font-semibold text-amber-900">70% advance</span> upon order confirmation and registration; 
               <span class="font-semibold text-blue-900">20% immediately</span> after civil mounting and equipment delivery; 
               <span class="font-semibold text-emerald-900">10% post-installation</span> upon generation meter integration by DISCOM and handover.
             </p>
-
             <p>• <span class="font-bold text-red-900">Subsidy Process Initiation Clause:</span> Clearance of 100% project dues (including final 10%) and signed handover documentation is strictly mandatory before BPPL initiates the subsidy claim workflow on the PM Surya Ghar National Portal for Direct Benefit Transfer (DBT).</p>
-
             <p>• <span class="font-bold text-slate-900">Quotation Validity:</span> This quotation remains valid for <span class="font-bold">15 days</span> from date of issuance for written acceptance, reply, and confirmed booking.</p>
           </div>
         </div>
 
-        <!-- Single Page Document Footer: Bank & Authorized Signature (Template Alignment) -->
+        <!-- Single Page Document Footer: Bank & Authorized Signature -->
         <div class="border-t-2 border-slate-800 pt-1">
           <div class="grid grid-cols-2 gap-3 items-end">
             <!-- Bank Details Box -->
             <div class="border border-slate-300 p-1.5 rounded bg-slate-50 text-[7.5px] leading-tight">
-              <p class="font-bold text-slate-900 mb-0.5 tracking-wider">OUR BANKING DETAILS:[cite: 1]</p>
-              <p class="font-bold text-slate-800">BHAGAVAT POWERTECH (P) LTD[cite: 1]</p>
-              <p class="text-slate-700">ACC NO: <span class="font-bold">50200051684835</span>[cite: 1]</p>
-              <p class="text-slate-700">IFSC: <span class="font-bold">HDFC0004724</span>[cite: 1]</p>
-              <p class="text-slate-700">HDFC BANK, MADHUSUDAN NAGAR BRANCH[cite: 1]</p>
+              <p class="font-bold text-slate-900 mb-0.5 tracking-wider">OUR BANKING DETAILS:</p>
+              <p class="font-bold text-slate-800">BHAGAVAT POWERTECH (P) LTD</p>
+              <p class="text-slate-700">ACC NO: <span class="font-bold">50200051684835</span></p>
+              <p class="text-slate-700">IFSC: <span class="font-bold">HDFC0004724</span></p>
+              <p class="text-slate-700">HDFC BANK, MADHUSUDAN NAGAR BRANCH</p>
             </div>
 
-            <!-- Approved Signatory Block with Actual Stamp Attached -->
+            <!-- Approved Signatory Block with Integrated Stamp -->
             <div class="text-right flex flex-col items-end">
-              <p class="text-[8px] font-bold text-slate-800 mb-0.5">Approved By:[cite: 1]</p>
+              <p class="text-[8px] font-bold text-slate-800 mb-0.5">Approved By:</p>
 
-              <!-- Embedded Bhagavat Powertech Pvt. Ltd. Stamp & Signature -->
+              <!-- Stamp & Signature Area -->
               <div class="relative w-28 h-16 flex items-center justify-end">
+                <!-- Direct load from repository with error fallback -->
                 <img 
                   id="stamp-image"
-                  src="stamp.jpg"
-                  alt="Bhagavat Powertech Pvt. Ltd. Official Seal & Signature" 
+                  src="./stamp.png" 
+                  alt="Bhagavat Powertech Seal"
+                  crossorigin="anonymous"
                   class="max-h-16 object-contain"
-                  onerror="this.style.opacity='0.2'; document.getElementById('seal-fallback').classList.remove('hidden');"
+                  onerror="this.style.display='none'; document.getElementById('svg-seal').classList.remove('hidden');"
                 />
-                <!-- Vector Fallback if offline/missing image file -->
-                <div id="seal-fallback" class="hidden absolute right-2 w-14 h-14 rounded-full border-2 border-dashed border-indigo-900 flex flex-col items-center justify-center text-[5.5px] font-black text-indigo-900 uppercase">
-                  <span>BHAGAVAT</span>
-                  <span class="text-[5px] italic">Signed</span>
-                  <span>POWERTECH</span>
+
+                <!-- Self-Contained Vector Stamp (Always displays even if stamp.png is missing or blocked) -->
+                <div id="svg-seal" class="hidden absolute right-0 w-16 h-16 pointer-events-none">
+                  <svg viewBox="0 0 100 100" class="w-full h-full text-indigo-900">
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="2 1"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                    <circle cx="50" cy="50" r="28" fill="none" stroke="currentColor" stroke-width="0.8"/>
+                    
+                    <path id="curve-top" d="M 18,50 A 32,32 0 0,1 82,50" fill="none"/>
+                    <text font-size="7.5" font-weight="900" fill="currentColor" letter-spacing="1">
+                      <textPath href="#curve-top" startOffset="50%" text-anchor="middle">BHAGAVAT POWERTECH</textPath>
+                    </text>
+
+                    <path id="curve-bot" d="M 82,50 A 32,32 0 0,1 18,50" fill="none"/>
+                    <text font-size="6.5" font-weight="800" fill="currentColor" letter-spacing="1.5">
+                      <textPath href="#curve-bot" startOffset="50%" text-anchor="middle">PVT. LTD. ★</textPath>
+                    </text>
+
+                    <text x="50" y="47" font-size="5.5" font-weight="bold" fill="currentColor" text-anchor="middle">Bhubaneswar</text>
+                    <path d="M 30,55 Q 45,35 55,62 T 75,45" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
                 </div>
               </div>
 
-              <p class="font-bold text-slate-900 text-[8.5px] mt-0.5">Jatin Das[cite: 1]</p>
-              <p class="text-[7.5px] text-slate-700">Director Project & Marketing[cite: 1]</p>
-              <p class="text-[7px] text-slate-500">jatindas@bpplindia.com[cite: 1]</p>
+              <p class="font-bold text-slate-900 text-[8.5px] mt-0.5">Jatin Das</p>
+              <p class="text-[7.5px] text-slate-700">Director Project & Marketing</p>
+              <p class="text-[7px] text-slate-500">jatindas@bpplindia.com</p>
             </div>
           </div>
         </div>
@@ -341,10 +344,9 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
       </div>
     </section>
 
-  </div>
+  </main>
 
   <script>
-    // Initialize date
     document.getElementById('in-date').valueAsDate = new Date();
 
     const formatINR = (val) => '₹ ' + Number(val).toLocaleString('en-IN', {
@@ -370,22 +372,22 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
 
       // Financial Calculation
       const r1_amt = parseFloat(document.getElementById('in-mod-amt').value) || 0;
-      const r1_tot = r1_amt * 1.05; // 5% GST
+      const r1_tot = r1_amt * 1.05;
 
       const r2_amt = parseFloat(document.getElementById('in-str-amt').value) || 0;
-      const r2_tot = r2_amt * 1.18; // 18% GST
+      const r2_tot = r2_amt * 1.18;
 
       const r3_amt = parseFloat(document.getElementById('in-inst-amt').value) || 0;
-      const r3_tot = r3_amt * 1.18; // 18% GST
+      const r3_tot = r3_amt * 1.18;
 
       const r4_amt = parseFloat(document.getElementById('in-pm-amt').value) || 0;
-      const r4_tot = r4_amt; // No GST
+      const r4_tot = r4_amt;
 
       const r5_amt = parseFloat(document.getElementById('in-m1-amt').value) || 0;
-      const r5_tot = r5_amt; // TPCODL direct
+      const r5_tot = r5_amt;
 
       const r6_amt = parseFloat(document.getElementById('in-m3-amt').value) || 0;
-      const r6_tot = r6_amt; // TPCODL direct
+      const r6_tot = r6_amt;
 
       const finalAmount = r1_tot + r2_tot + r3_tot + r4_tot + r5_tot + r6_tot;
 
@@ -418,7 +420,7 @@ Plot No. 412, Saheed Nagar, Bhubaneswar, Odisha</textarea>
       const opt = {
         margin: 0,
         filename: `Quotation_${quoteNo}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 1.0 },
         html2canvas: { scale: 3, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
